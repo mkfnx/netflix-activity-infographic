@@ -4,13 +4,15 @@ from wordcloud import WordCloud
 from helpers import *
 from infographic import get_infographic
 
+st.set_page_config(
+    page_title='Infografía Netflix - @mkfnx',
+)
+
 st.markdown(
     """
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1718947524011117" crossorigin="anonymous"></script>
-    """, unsafe_allow_html=True)
-
-st.set_page_config(
-    page_title='Infografía Netflix - @mkfnx',
+    """,
+    unsafe_allow_html=True
 )
 
 #
