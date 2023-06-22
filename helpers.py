@@ -2,9 +2,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime
-import streamlit as st
-from PIL import Image, ImageDraw, ImageFont
-import textwrap
 
 
 # Convert time string in format HH:MM:SS to seconds
@@ -48,7 +45,7 @@ def get_clean_series_name(title):
             return clean_title
 
 
-def graph_top_shows(shows, qty, title="", ylabel="", width=15, height=6, ):
+def create_graph_fig(shows, qty, title="", ylabel="", width=15, height=6, ):
     sns.set_style('darkgrid')
     fig = plt.figure(figsize=(width, height))
     sns.set_context('notebook', font_scale=1, rc={"grid.linewidth": 2})
@@ -58,7 +55,7 @@ def graph_top_shows(shows, qty, title="", ylabel="", width=15, height=6, ):
     plt.title(title)
     plt.xticks(shows, rotation=3)
 
-    st.pyplot(fig)
+    return fig
 
 
 def adjust_df_columns(df):
@@ -102,14 +99,6 @@ def get_first_show_info(df, dates):
     return first_show, first_show_date
 
 
-def get_top_played_content(df):
-    df.loc[:, 'plays'] = df.title.map(df.title.value_counts())
-    df.loc[:, 'count'] = 1
-    sorted_by_plays = df.loc[df.title.duplicated() == False]
-    sorted_by_plays = sorted_by_plays.sort_values('plays', ascending=False)
-    return sorted_by_plays
-
-
 def get_top_movies(df):
     ts = df.title.str
     # Remove content which title indicates that is part of a series
@@ -129,13 +118,13 @@ def get_top_movies(df):
     return non_series_df
 
 
-# TODO: Check if dataset complement solves this
 # Analyze TV Series (Content with multiple episodes)
 # Select content which name indicates that it's a series
+# TODO: Check if dataset complement solves this
 # seriesDf = df[~df.isin(nonSeriesDf).all(1)]
 def get_series_df(df):
     ts = df.title.str
-    return pd.DataFrame(
+    series_df = pd.DataFrame(
         df.loc[
             ts.contains(': Season') | ts.contains(': Book') | ts.contains(': Part') | ts.contains(' \(Episode')
             | ts.contains(': Episode') | ts.contains(' \(Chapter ') | ts.contains(': Chapter')
@@ -143,33 +132,29 @@ def get_series_df(df):
             | ts.contains(': Capítulo') | ts.contains(': Parte') | ts.contains(': Episodio ')
             | ts.contains(" \(Episodio ")
             ])
+    return series_df
 
 
-def get_top_series_by_play_count(series_df):
-    top_watched_series_by_plays = pd.DataFrame(series_df)
-    top_watched_series_by_plays.loc[:, 'plays'] = top_watched_series_by_plays.title.map(
-        top_watched_series_by_plays.title.value_counts())
-    top_watched_series_by_plays = top_watched_series_by_plays \
-        .loc[top_watched_series_by_plays.title.duplicated() == False]
-    top_watched_series_by_plays = top_watched_series_by_plays.sort_values('plays', ascending=False)
-    return top_watched_series_by_plays
+def get_top_played_series(series_df):
+    top_played_content = pd.DataFrame(series_df)
+    top_played_content.title = top_played_content.title.map(get_clean_series_name)
+    top_played_content.loc[:, 'plays'] = top_played_content.title.map(
+        top_played_content.title.value_counts())
+    top_played_content = top_played_content.loc[top_played_content.title.duplicated() == False]
+    top_played_content = top_played_content.sort_values('plays', ascending=False)
+    return top_played_content
 
 
-def get_top_series_by_episodes_played(series_df):
+def get_top_series_by_unique_episodes_played(series_df):
     top_watched_by_episodes = pd.DataFrame(series_df.loc[series_df.title.duplicated() == False])
-    top_watched_by_episodes.title = top_watched_by_episodes.title.map(get_clean_series_name)
-    series_df.title = series_df.title.map(get_clean_series_name)
-    top_watched_by_episodes.loc[:, 'plays'] = top_watched_by_episodes.title.map(
-        top_watched_by_episodes.title.value_counts()
-    )
-    top_watched_by_episodes = top_watched_by_episodes.loc[top_watched_by_episodes.title.duplicated() == False]
-    top_watched_by_episodes = top_watched_by_episodes.sort_values('plays', ascending=False)
-    return top_watched_by_episodes
+    return get_top_played_series(top_watched_by_episodes)
 
 
 def get_top_series_by_watch_time(series_df):
     # get sum of watched time
-    top_watched_series = series_df.groupby(['title'])['duration_secs'].sum()
+    top_watched_series = pd.DataFrame(series_df)
+    top_watched_series.title = top_watched_series.title.map(get_clean_series_name)
+    top_watched_series = top_watched_series.groupby(['title'])['duration_secs'].sum()
     top_watched_series_df = pd.DataFrame(
         {
             'title': top_watched_series.index,
@@ -183,6 +168,7 @@ def get_top_series_by_watch_time(series_df):
 
 def add_day_and_hour_columns(df):
     # Watch events by weekday and hour of day
+    df.loc[:, 'count'] = 1
     df.start = pd.to_datetime(df.start, utc=True)
     df = df.set_index('start')
     df.index = df.index.tz_convert('America/Mexico_City')
@@ -210,7 +196,7 @@ def create_df_per_hour(df):
     return df_per_hour
 
 
-def graph_watch_times(df):
+def create_watch_times_heatmap(df):
     out = df.groupby(['day', 'hour'])['count'].sum().unstack()
     out.sum().sum()
     heatmap_fig = plt.figure(figsize=(16, 8))
@@ -220,4 +206,4 @@ def graph_watch_times(df):
     plt.xlabel('Hora', fontsize=15)
     plt.ylabel('Día de la semana', fontsize=15)
     ax.invert_yaxis()
-    st.pyplot(heatmap_fig)
+    return heatmap_fig
