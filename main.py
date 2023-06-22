@@ -4,18 +4,28 @@ from wordcloud import WordCloud
 from helpers import *
 from infographic import get_infographic
 
+st.markdown(
+    """
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1718947524011117" crossorigin="anonymous"></script>
+    """, unsafe_allow_html=True)
+
+st.set_page_config(
+    page_title='Infografía Netflix - @mkfnx',
+)
+
 #
 # Streamlit page Start
 #
+
 st.title('Crea una infografía de tu actividad en Netflix')
 
-st.info('Al utilizar este sitio acepta el uso de cookies.', icon="ℹ️")
+st.info('Al utilizar este sitio acepta el uso de cookies.', icon='ℹ️')
 
 st.subheader('Para crear tu infografía solo necesitas subir el archivo "ViewingActivity.csv" que se encuentra en tu '
              'reporte de datos de Netflix.')
 st.subheader('Puedes obtener tu reporte de datos de Netflix en el siguiente enlace')
 st.markdown('#### [https://www.netflix.com/account/getmyinfo](https://www.netflix.com/account/getmyinfo)')
-file = st.file_uploader('Sube el archivo "ViewingActivity.csv de tu reporte de datos de Netflix"')
+file = st.file_uploader('Sube el archivo "ViewingActivity.csv" de tu reporte de datos de Netflix')
 
 if file is not None:
     df = None
@@ -76,17 +86,16 @@ if file is not None:
     movies_freq_dict = dict(zip(top_movies.title, top_movies.plays))
     series_freq_dict = dict(zip(top_series_by_play_count.title, top_series_by_play_count.plays))
     all_content_dict = movies_freq_dict | series_freq_dict
-    wordcloud = WordCloud(collocations=False, max_words=85, background_color="rgba(255, 255, 255, 0)", mode="RGBA") \
+    wordcloud = WordCloud(collocations=False, max_words=85, background_color='rgba(255, 255, 255, 0)', mode='RGBA') \
         .generate_from_frequencies(all_content_dict)
     fig = plt.figure()
-    plt.imshow(wordcloud, interpolation="bilinear")
-    plt.axis("off")
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
     st.subheader('Nube de títulos de contenidos más vistos')
     st.text('Muestra los títulos de los contenidos en proporción a la cantidad de veces que se han visto.')
     st.text('Es decir, los textos más grandes son los contenidos más vistos y los textos pequeños los menos vistos.')
     st.text('Está limitado a 85 títulos.')
     st.pyplot(fig)
-
 
     #
     # Common watching times
