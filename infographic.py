@@ -23,9 +23,9 @@ def get_infographic(account_longevity, total_watch_time, watch_hours_per_week, t
     # Account age
     account_longevity_x = 345
     draw.text((account_longevity_x, 240), 'Desde', font=regular_font, fill='white')
-    draw.text((account_longevity_x + 125, 230), account_longevity.start, font=highlight_font, fill='white')
-    draw.text((account_longevity_x + 5, 315), 'Hasta', font=regular_font, fill='white')
-    draw.text((account_longevity_x + 125, 305), f'{account_longevity.years} años {account_longevity.months} meses',
+    draw.text((account_longevity_x + 155, 230), account_longevity.start, font=highlight_font, fill='white')
+    draw.text((account_longevity_x + 5, 315), 'Durante', font=regular_font, fill='white')
+    draw.text((account_longevity_x + 155, 305), f'{account_longevity.years} años {account_longevity.months} meses',
               font=highlight_font, fill='white')
 
     # Watching time
